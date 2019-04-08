@@ -44,7 +44,7 @@ import (
 //
 // Constants
 //
-const defaultCNIDir = "/var/lib/cni/vhostuser"
+const defaultCNIDir = "/run/lib/cni/vhostuser"
 
 //
 // Types
@@ -59,7 +59,8 @@ func (cniOvs CniOvs) AddOnHost(conf *usrsptypes.NetConf, args *skel.CmdArgs, ipR
 	var err error
 	var data ovsdb.OvsSavedData
 
-	logging.Debugf("OVS AddOnHost: ENTER")
+	logging.Debugf("OVS AddOnHost")
+	logging.Debugf("OvsSavedData: %+v\n", data)
 
 	//
 	// Create Local Interface
@@ -102,7 +103,7 @@ func (cniOvs CniOvs) AddOnHost(conf *usrsptypes.NetConf, args *skel.CmdArgs, ipR
 }
 
 func (cniOvs CniOvs) AddOnContainer(conf *usrsptypes.NetConf, args *skel.CmdArgs, ipResult *current.Result) error {
-	logging.Debugf("OVS AddOnContainer: ENTER")
+	logging.Debugf("OVS AddOnContainer")
 	return nil
 }
 
@@ -110,7 +111,7 @@ func (cniOvs CniOvs) DelFromHost(conf *usrsptypes.NetConf, args *skel.CmdArgs) e
 	var data ovsdb.OvsSavedData
 	var err error
 
-	logging.Debugf("OVS DelFromHost: ENTER")
+	logging.Debugf("OVS DelFromHost")
 
 	//
 	// Load Config - Retrieved squirreled away data needed for processing delete
@@ -137,7 +138,7 @@ func (cniOvs CniOvs) DelFromHost(conf *usrsptypes.NetConf, args *skel.CmdArgs) e
 }
 
 func (cniOvs CniOvs) DelFromContainer(conf *usrsptypes.NetConf, args *skel.CmdArgs) error {
-	logging.Debugf("OVS DelFromContainer: ENTER")
+	logging.Debugf("OVS DelFromContainer")
 	return nil
 }
 
@@ -159,7 +160,6 @@ func generateRandomMacAddress() string {
 }
 
 func addLocalDeviceVhost(conf *usrsptypes.NetConf, args *skel.CmdArgs, data *ovsdb.OvsSavedData) error {
-
 	s := []string{args.ContainerID[:12], args.IfName}
 	sockRef := strings.Join(s, "-")
 
@@ -178,12 +178,17 @@ func addLocalDeviceVhost(conf *usrsptypes.NetConf, args *skel.CmdArgs, data *ovs
 	if vhostName, err := createVhostPort(sockDir, sockRef); err == nil {
 		if vhostPortMac, err := getVhostPortMac(vhostName); err == nil {
 			data.VhostMac = vhostPortMac
+		} else  {
+                	logging.Errorf("Failed to get vhostPortMac %s", err)
 		}
 
 		data.Vhostname = vhostName
 		data.IfMac = generateRandomMacAddress()
+		logging.Debugf("addLocalDeviceVhost OvsSavedData: %+v\n", data)
+	} else {
+        	logging.Errorf("Failed to createVhostPort %s", err)
 	}
-
+	logging.Debugf("addLocalDeviceVhost OvsSavedData: %+v\n", data)
 	return nil
 }
 

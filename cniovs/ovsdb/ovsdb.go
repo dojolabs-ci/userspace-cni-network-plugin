@@ -128,7 +128,7 @@ func fileCleanup(directory string, filepath string) (err error) {
 	if filepath != "" {
 		err = os.Remove(filepath)
 		if err != nil {
-			return fmt.Errorf("ERROR: Failed to delete file: %v", err)
+			return fmt.Errorf("ERROR: Failed to delete file: %s", err)
 		}
 	}
 
